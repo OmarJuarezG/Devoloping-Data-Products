@@ -1,0 +1,76 @@
+---
+title: 'Developing Data Products: Week 4 Assignment'
+author: "Omar Juarez"
+date: "March 28, 2020"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Shiny Application and Reproducible Pitch
+
+This is the final project from the Developing Data Products course. The app predicts the miles per gallon based on the horse power of the car. Here is a preview of the app.
+```{r echo=FALSE}
+library(png)
+library(grid)
+img <- readPNG("D:/02 Coursera/02 R/01 Johns Hopkings-Coursera/09 Developing Data Products/APP_IMAGE.PNG")
+grid.raster(img)
+```
+
+## UI Code
+```{r echo=TRUE,warning=FALSE,message=FALSE,eval=FALSE}
+library(shiny)
+shinyUI(fluidPage(
+  
+  titlePanel("Predict MPG from Horse Power"),
+  
+  sidebarLayout(
+    sidebarPanel("Select horse power",
+       sliderInput("SliderHP",
+                   "Horse Power:",
+                   min = 60,
+                   max = 200,
+                   value = 60)
+    ),
+    
+    mainPanel(
+       plotOutput("hp_plot"),
+       h3("Predicted Miles per gallon from model"),
+       textOutput("pred")
+    )
+  )
+))
+```
+
+
+## Server Code
+
+```{r echo=TRUE,warning=FALSE,message=FALSE,eval=FALSE}
+library(shiny)
+shinyServer(function(input, output) {
+  
+  model <- lm(mpg ~ hp, data = mtcars)
+  
+  modelpred <- reactive({ 
+    hp_input <- input$SliderHP
+    predict(model, newdata = data.frame(hp = hp_input)) 
+  })
+   
+  output$hp_plot <- renderPlot({
+  hp_input <- input$SliderHP
+  scatterplot(mpg ~ hp, data = mtcars, xlab = "Horse Power", ylab = "Miles per Gallon")
+  points(hp_input, modelpred(), col = "red", pch = 16, cex = 1)  
+  })
+  output$pred <- renderText({
+    modelpred()
+  })
+})
+```
+
+## Links to the code and app.
+
+- Server and user interface at: https://github.com/SebastianOkada/Devoloping-Data-Products
+- The app at: https://omarjuarez.shinyapps.io/myapp/
+
